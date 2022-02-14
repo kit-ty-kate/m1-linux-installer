@@ -1,0 +1,6 @@
+[submodule "asahi-installer"]
+	path = asahi-installer
+	url = https://github.com/AsahiLinux/asahi-installer
+[submodule "m1-debian"]
+	path = m1-debian
+	url = https://git.zerfleddert.de/git/m1-debian
