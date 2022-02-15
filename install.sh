@@ -14,6 +14,9 @@ fi
 cd "$(dirname "$0")"
 
 build_asahi_installer() {(
+  echo "Building asahi-installer..."
+  echo "  - Setting up..."
+
   # The 7zip installed by homebrew is called 7zz for some reason...
   mkdir -p ./tmp-bin
   echo '#!/bin/sh' > ./tmp-bin/7z
@@ -24,19 +27,27 @@ build_asahi_installer() {(
   # Use cpio
   export PATH="/opt/homebrew/opt/cpio/bin:$PATH"
 
+  echo "  - Building..."
   ./asahi-installer/build.sh
 )}
 
 build_uboot() {(
+  echo "Building u-boot..."
+  echo "  - Setting up..."
+
   # TODO: Probably use master at some point, maybe?
   rm -rf u-boot
   git clone --depth 1 https://github.com/jannau/u-boot -b x2r10g10b10
   cd u-boot
 
+  echo "  - Patching [1/1]..."
   patch -p1 -i ../patches/v2-console-usb-kbd-Limit-poll-frequency-to-improve-performance.diff
+
+  echo "  - Building..."
   make apple_m1_defconfig
   make -j "$(nproc)"
 
+  echo "  - Wrapping up..."
   cat \
     ../asahi-installer/m1n1/build/m1n1.bin \
     $(find ../linux/arch/arm64/boot/dts/apple/ -name "*.dtb") \
@@ -44,8 +55,37 @@ build_uboot() {(
   > ../u-boot.bin
 )}
 
+build_linux() {(
+  echo "Building linux..."
+  echo "  - Setting up..."
+
+  # TODO: Probably use the asahi branch or even master at some point, maybe?
+  rm -rf linux
+  git clone --depth 1 https://github.com/AsahiLinux/linux -b smc/work
+  cd linux
+
+  echo "  - Patching [1/6]..."
+  cat ../patches/HID-add-Apple-SPI-transport.patch | git am -
+  echo "  - Patching [2/6]..."
+  cat ../patches/mca-Move-MCLK-enable-disable-to-earlier.patch | git am -
+  echo "  - Patching [3/6]..."
+  cat ../patches/tas2770-Insert-post-reset-delay.patch | git am -
+  echo "  - Patching [4/6]..."
+  cat ../patches/dts-t600x-j314-j316-Add-NOR-flash-node.patch | git am -
+  echo "  - Patching [5/6]..."
+  cat ../patches/dts-t600x-Add-spi3-and-keyboard-nodes.patch | git am -
+  echo "  - Patching [6/6]..."
+  cat ../patches/0001-4k-iommu-patch.patch | git am -
+
+  echo "  - Configuring..."
+  cp ../linux-config .config
+  make olddefconfig
+
+  echo "  - Building..."
+  make -j "$(nproc)" V=0 bindeb-pkg
+)}
+
 modify_step2() {(
-  # TODO: build linux (see m1-debian/bootstrap.sh)
   # TODO: unzip a rootfs tar.gz (e.g. alpine-minirootfs-3.15.0-aarch64.tar.gz)
   # TODO: take bootaa64.efi from e.g. alpine-standard-3.15.0-aarch64.iso to boot grub
   # TODO: create a dd-able img (see m1-debian/bootstrap.sh)
@@ -69,5 +109,6 @@ install_asahi() {(
 )}
 
 build_asahi_installer
+build_linux
 build_uboot
 install_asahi

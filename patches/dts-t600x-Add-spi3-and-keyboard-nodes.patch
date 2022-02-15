@@ -1,0 +1,25 @@
+From 8737955a0263d09ffa8550658dfcac1df3d0665c Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Tue, 8 Feb 2022 21:21:52 +0100
+Subject: [PATCH] fixup! arm64: dts: apple: t600x: Add spi3 and keyboard nodes
+
+status = "ok" is not spec complient and u-boot does not recognize it
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+index d57362b6ab5f86..8452a93fd320ea 100644
+--- a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
++++ b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+@@ -143,7 +143,7 @@
+ };
+ 
+ &spi3 {
+-	status = "ok";
++	status = "okay";
+ 
+ 	hid-transport@0 {
+ 		compatible = "apple,spi-hid-transport";

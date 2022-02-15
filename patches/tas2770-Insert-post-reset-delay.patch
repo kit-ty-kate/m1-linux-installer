@@ -1,0 +1,57 @@
+From e395b1261a7ada3b1eb890e49e25f4517d718f56 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Povi=C5=A1er?= <povik+lin@protonmail.com>
+Date: Fri, 28 Jan 2022 20:20:16 +0100
+Subject: [PATCH] ASoC: tas2770: Insert post reset delay
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Per TAS2770 datasheet there must be a 1 ms delay from reset to first
+command. So insert delays into the driver where appropriate.
+
+Fixes: 1a476abc723e ("tas2770: add tas2770 smart PA kernel driver")
+Signed-off-by: Martin Povišer <povik+lin@protonmail.com>
+---
+ sound/soc/codecs/tas2770.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/sound/soc/codecs/tas2770.c b/sound/soc/codecs/tas2770.c
+index b52c0861edc8..e11d04e31a67 100644
+--- a/sound/soc/codecs/tas2770.c
++++ b/sound/soc/codecs/tas2770.c
+@@ -38,10 +38,12 @@ static void tas2770_reset(struct tas2770_priv *tas2770)
+ 		gpiod_set_value_cansleep(tas2770->reset_gpio, 0);
+ 		msleep(20);
+ 		gpiod_set_value_cansleep(tas2770->reset_gpio, 1);
++		msleep(1);
+ 	}
+ 
+ 	snd_soc_component_write(tas2770->component, TAS2770_SW_RST,
+ 		TAS2770_RST);
++	msleep(1);
+ }
+ 
+ static int tas2770_set_bias_level(struct snd_soc_component *component,
+@@ -110,6 +112,7 @@ static int tas2770_codec_resume(struct snd_soc_component *component)
+ 
+ 	if (tas2770->sdz_gpio) {
+ 		gpiod_set_value_cansleep(tas2770->sdz_gpio, 1);
++		msleep(1);
+ 	} else {
+ 		ret = snd_soc_component_update_bits(component, TAS2770_PWR_CTRL,
+ 						    TAS2770_PWR_CTRL_MASK,
+@@ -529,8 +532,10 @@ static int tas2770_codec_probe(struct snd_soc_component *component)
+ 
+ 	tas2770->component = component;
+ 
+-	if (tas2770->sdz_gpio)
++	if (tas2770->sdz_gpio) {
+ 		gpiod_set_value_cansleep(tas2770->sdz_gpio, 1);
++		msleep(1);
++	}
+ 
+ 	tas2770_reset(tas2770);
+ 
+-- 
+2.33.0
+
