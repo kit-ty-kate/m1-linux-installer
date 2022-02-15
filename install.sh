@@ -36,6 +36,7 @@ build_uboot() {(
   echo "  - Setting up..."
 
   # TODO: Probably use master at some point, maybe?
+  # TODO: Use a git submodule instead for maximum reproducibility
   rm -rf u-boot
   git clone --depth 1 https://github.com/jannau/u-boot -b x2r10g10b10
   cd u-boot
