@@ -91,6 +91,7 @@ modify_step2() {(
   # TODO: take bootaa64.efi from e.g. alpine-standard-3.15.0-aarch64.iso to boot grub
   # TODO: create a dd-able img (see m1-debian/bootstrap.sh)
   # TODO: actually modify step2.sh for those files to be installed during the asahi install process
+  return
 )}
 
 install_asahi() {(
