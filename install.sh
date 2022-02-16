@@ -15,7 +15,10 @@ cd "$(dirname "$0")"
 
 build_asahi_installer() {(
   echo "Building asahi-installer..."
+
   echo "  - Setting up..."
+  cd asahi-installer
+  git clean -xdf
 
   # The 7zip installed by homebrew is called 7zz for some reason...
   mkdir -p ./tmp-bin
@@ -28,18 +31,15 @@ build_asahi_installer() {(
   export PATH="/opt/homebrew/opt/cpio/bin:$PATH"
 
   echo "  - Building..."
-  ./asahi-installer/build.sh
+  ./build.sh
 )}
 
 build_uboot() {(
   echo "Building u-boot..."
-  echo "  - Setting up..."
 
-  # TODO: Probably use master at some point, maybe?
-  # TODO: Use a git submodule instead for maximum reproducibility
-  rm -rf u-boot
-  git clone --depth 1 https://github.com/jannau/u-boot -b x2r10g10b10
+  echo "  - Setting up..."
   cd u-boot
+  git clean -xdf
 
   echo "  - Patching [1/1]..."
   patch -p1 -i ../patches/v2-console-usb-kbd-Limit-poll-frequency-to-improve-performance.diff
@@ -58,12 +58,10 @@ build_uboot() {(
 
 build_linux() {(
   echo "Building linux..."
-  echo "  - Setting up..."
 
-  # TODO: Probably use the asahi branch or even master at some point, maybe?
-  rm -rf linux
-  git clone --depth 1 https://github.com/AsahiLinux/linux -b smc/work
+  echo "  - Setting up..."
   cd linux
+  git clean -xdf
 
   echo "  - Patching [1/6]..."
   cat ../patches/HID-add-Apple-SPI-transport.patch | git am -
