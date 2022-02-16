@@ -1,6 +1,12 @@
 [submodule "asahi-installer"]
 	path = asahi-installer
 	url = https://github.com/AsahiLinux/asahi-installer
+	branch = main
 [submodule "m1-debian"]
 	path = m1-debian
 	url = https://git.zerfleddert.de/git/m1-debian
+	branch = master
+[submodule "linux"]
+	path = linux
+	url = https://github.com/AsahiLinux/linux
+	branch = smc/work
