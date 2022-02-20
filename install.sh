@@ -58,30 +58,8 @@ build_uboot() {(
 
 build_linux() {(
   echo "Building linux..."
-
-  echo "  - Setting up..."
-  cd linux
-  git clean -xdf
-
-  echo "  - Patching [1/6]..."
-  cat ../patches/HID-add-Apple-SPI-transport.patch | git am -
-  echo "  - Patching [2/6]..."
-  cat ../patches/mca-Move-MCLK-enable-disable-to-earlier.patch | git am -
-  echo "  - Patching [3/6]..."
-  cat ../patches/tas2770-Insert-post-reset-delay.patch | git am -
-  echo "  - Patching [4/6]..."
-  cat ../patches/dts-t600x-j314-j316-Add-NOR-flash-node.patch | git am -
-  echo "  - Patching [5/6]..."
-  cat ../patches/dts-t600x-Add-spi3-and-keyboard-nodes.patch | git am -
-  echo "  - Patching [6/6]..."
-  cat ../patches/0001-4k-iommu-patch.patch | git am -
-
-  echo "  - Configuring..."
-  cp ../linux-config .config
-  make olddefconfig
-
-  echo "  - Building..."
-  make -j "$(nproc)" V=0 bindeb-pkg
+  docker build -t m1-linux .
+  docker run --rm m1-linux cat ./linux-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-arm64.tar.gz > ./linux-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-arm64.tar.gz
 )}
 
 modify_step2() {(

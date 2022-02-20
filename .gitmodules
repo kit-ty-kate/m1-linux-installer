@@ -6,10 +6,6 @@
 	path = m1-debian
 	url = https://git.zerfleddert.de/git/m1-debian
 	branch = master
-[submodule "linux"]
-	path = linux
-	url = https://github.com/AsahiLinux/linux
-	branch = smc/work
 [submodule "u-boot"]
 	path = u-boot
 	url = https://github.com/jannau/u-boot
