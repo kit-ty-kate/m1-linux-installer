@@ -1,0 +1,8 @@
+FROM debian
+RUN apt-get update && apt-get install -y git build-essential cpio p7zip-full imagemagick python3-certifi wget device-tree-compiler
+
+RUN git clone https://github.com/AsahiLinux/asahi-installer
+WORKDIR ./asahi-installer
+RUN git checkout 532450d5140fc3317ab5c80e8dfd1bf50d42c1f2
+
+RUN ./build.sh

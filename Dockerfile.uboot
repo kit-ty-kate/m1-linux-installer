@@ -1,0 +1,12 @@
+FROM debian
+RUN apt-get update && apt-get install -y git build-essential bison flex libssl-dev bc
+
+RUN git clone https://github.com/jannau/u-boot
+WORKDIR ./u-boot
+RUN git checkout fd54b633e9ce9a103498340f454531e2fa7f7f11
+COPY patches/ /patches
+
+RUN patch -p1 -i /patches/v2-console-usb-kbd-Limit-poll-frequency-to-improve-performance.diff
+
+RUN make apple_m1_defconfig
+RUN make -j$(nproc)

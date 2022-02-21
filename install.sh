@@ -14,52 +14,21 @@ fi
 cd "$(dirname "$0")"
 
 build_asahi_installer() {(
-  echo "Building asahi-installer..."
-
-  echo "  - Setting up..."
-  cd asahi-installer
-  git clean -xdf
-
-  # The 7zip installed by homebrew is called 7zz for some reason...
-  mkdir -p ./tmp-bin
-  echo '#!/bin/sh' > ./tmp-bin/7z
-  echo 'exec 7zz $@' >> ./tmp-bin/7z
-  chmod +x ./tmp-bin/7z
-  export PATH="$PWD/tmp-bin:$PATH"
-
-  # Use cpio
-  export PATH="/opt/homebrew/opt/cpio/bin:$PATH"
-
-  echo "  - Building..."
-  ./build.sh
+  docker build -t m1-asahi -f Dockerfile.asahi src
+  docker run --rm m1-asahi cat installer.tar.gz > dest/installer.tar.gz
+  docker run --rm m1-asahi cat package/m1n1.bin > dest/m1n1.bin
 )}
 
 build_uboot() {(
-  echo "Building u-boot..."
-
-  echo "  - Setting up..."
-  cd u-boot
-  git clean -xdf
-
-  echo "  - Patching [1/1]..."
-  patch -p1 -i ../patches/v2-console-usb-kbd-Limit-poll-frequency-to-improve-performance.diff
-
-  echo "  - Building..."
-  make apple_m1_defconfig
-  make -j "$(nproc)"
-
-  echo "  - Wrapping up..."
-  cat \
-    ../asahi-installer/m1n1/build/m1n1.bin \
-    $(find ../linux/arch/arm64/boot/dts/apple/ -name "*.dtb") \
-    u-boot/nodtb.bin \
-  > ../u-boot.bin
+  docker build -t m1-uboot -f Dockerfile.uboot src
+  docker run --rm m1-uboot cat u-boot-nodtb.bin > dest/u-boot-nodtb.bin
+  cat dest/m1n1.bin dest/linux.dtb dest/u-boot-nodtb.bin > dest/u-boot.bin
 )}
 
 build_linux() {(
-  echo "Building linux..."
-  docker build -t m1-linux .
-  docker run --rm m1-linux cat ./linux-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-arm64.tar.gz > ./linux-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-arm64.tar.gz
+  docker build -t m1-linux -f Dockerfile.linux src
+  docker run --rm m1-linux cat linux.tar.gz > dest/linux.tar.gz
+  docker run --rm m1-linux cat linux.dtb > dest/linux.dtb
 )}
 
 modify_step2() {(
@@ -86,7 +55,9 @@ install_asahi() {(
   exec sudo ./install.sh
 )}
 
+mkdir -p dest
+
 build_asahi_installer
 build_linux
 build_uboot
-install_asahi
+#install_asahi

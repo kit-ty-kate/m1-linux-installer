@@ -1,11 +1,11 @@
 FROM debian
-
 RUN apt-get update && apt-get install -y bc git fakeroot build-essential ncurses-dev xz-utils cpio flex bison rsync kmod libssl-dev
 
-RUN git clone https://github.com/AsahiLinux/linux -b b3265ba9e5bd944edd407962028bc6e129d2d5b7
+RUN git clone https://github.com/AsahiLinux/linux
+WORKDIR ./linux
+RUN git checkout b3265ba9e5bd944edd407962028bc6e129d2d5b7
 COPY linux-config ./linux/.config
 COPY patches/ /patches
-WORKDIR ./linux
 
 RUN patch -p1 -i /patches/HID-add-Apple-SPI-transport.patch
 RUN patch -p1 -i /patches/mca-Move-MCLK-enable-disable-to-earlier.patch
@@ -16,3 +16,6 @@ RUN patch -p1 -i /patches/0001-4k-iommu-patch.patch
 
 RUN make olddefconfig
 RUN make -j$(nproc) targz-pkg
+
+RUN mv linux-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-arm64.tar.gz linux.tar.gz
+RUN cat arch/arm64/boot/dts/apple/*.dtb > linux.dtb
