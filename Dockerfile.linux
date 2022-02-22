@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y bc git fakeroot build-essential ncurses
 RUN git clone https://github.com/AsahiLinux/linux
 WORKDIR ./linux
 RUN git checkout b3265ba9e5bd944edd407962028bc6e129d2d5b7
-COPY linux-config ./linux/.config
+COPY linux-config .config
 COPY patches/ /patches
 
 RUN patch -p1 -i /patches/HID-add-Apple-SPI-transport.patch
