@@ -1,0 +1,31 @@
+FROM debian
+RUN apt-get update && apt-get install -y eatmydata debootstrap
+
+COPY dest/linux.deb linux.deb
+COPY files/ files
+
+RUN eatmydata ${DEBOOTSTRAP} --arch=arm64 --include initramfs-tools,wpasupplicant,tcpdump,vim,tmux,vlan,ntpdate,bridge-utils,parted,curl,wget,grub-efi-arm64,mtr-tiny,dbus,ca-certificates,sudo,openssh-client testing testing http://ftp.fau.de/debian
+
+WORKDIR /testing
+RUN echo live > etc/hostname
+RUN echo > etc/motd
+RUN cp ../files/sources.list etc/apt/sources.list
+RUN cp ../files/hosts etc/hosts
+RUN cp ../files/resolv.conf etc/resolv.conf
+RUN cp ../files/fstab etc/fstab
+RUN cp ../files/quickstart.txt root/
+RUN cp ../files/interfaces etc/network/interfaces
+RUN cp ../files/wpa.conf etc/wpa_supplicant/wpa_supplicant.conf
+RUN chroot . apt update
+RUN chroot . apt install -y firmware-linux
+RUN sed -i -e 's/root:x:/root::/' etc/passwd
+RUN chroot . dpkg -i ../linux.deb
+
+WORKDIR /media
+RUN dd if=/dev/zero of=media bs=1 count=0 seek=1G
+RUN mkfs.ext4 media
+RUN tune2fs -O extents,uninit_bg,dir_index -m 0 -c 0 -i 0 media
+RUN mount -o loop media /mnt
+RUN cp -a /testing/* /mnt/
+RUN umount /mnt
+RUN tar cf - media | pigz > m1.tar.gz

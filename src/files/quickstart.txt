@@ -1,0 +1,91 @@
+# Ethernet
+ip l s
+dhclient <device>
+
+# Wifi
+rmmod brcmfmac
+rmmod brcmutil
+mount /dev/sda1 /mnt
+tar -C /lib/firmware/ -xf /mnt/linux-firmware.tar
+umount /mnt
+modprobe brcmfmac
+vim /etc/wpa_supplicant/wpa_supplicant.conf
+wpa_supplicant -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+dhclient wlan0
+
+# Time
+ntpdate pool.ntp.org
+date --set 2022-01-25
+date --set 14:21
+
+# Configure timezone
+dpkg-reconfigure tzdata
+
+# Fix grub
+# We deinstall grub-efi-arm64-signed- because it creates a file fbaa64.efi
+# which makes u-boot hang.
+apt-get install grub-efi grub-efi-arm64-signed-
+grub-install --target=arm64-efi --efi-directory=/boot/efi --removable
+update-grub
+# Set removable media to yes and nvram to no to make later grub updates work
+dpkg-reconfigure grub-efi-arm64
+
+See also: https://github.com/AsahiLinux/docs/wiki/U-Boot
+
+# xorg
+cat > /etc/X11/xorg.conf.d/00-keyboard.conf <<'EOF'
+Section "InputClass"
+        Identifier "system-keyboard"
+        MatchIsKeyboard "on"
+        Option "XkbLayout" "us"
+        Option "XkbModel" "pc105"
+        Option "XkbVariant" "de_se_fi"
+        Option "XkbOptions" "ctrl:nocaps"
+EndSection
+EOF
+
+cat > /etc/X11/xorg.conf.d/30-input.conf <<'EOF'
+Section "InputClass"
+  Identifier "libinput touchpad catchall"
+  MatchIsTouchpad "on"
+  MatchDevicePath "/dev/input/event*"
+  Option "Tapping" "False"
+  Option "TappingDrag" "False"
+  Option "DisableWhileTyping" "True"
+  Option "AccelProfile" "adaptive"
+  Option "AccelSpeed" "0.3"
+  Option "AccelerationNumerator" "2"
+  Option "AccelerationDenominator" "1"
+  Option "AccelerationThreshold" "4"
+  Option "AdaptiveDeceleration" "2"
+  Option "NaturalScrolling" "0"
+        Option "TappingButtonMap" "lmr"
+        Option "ClickMethod" "clickfinger"
+  Driver "libinput"
+EndSection
+EOF
+
+# Create a user
+useradd -m -c 'user' user
+passwd user
+
+# Install gnome
+apt-get install gnome
+/etc/init.d/gdm3 start
+
+# If you need to install the kernel on a bootstrapped system or one that needs recovery
+wget https://tg.st/u/k.deb
+dpkg -i k.deb
+
+- You can also use the live system to install Debian on the m1, the rough outline is:
+
+        - Create two paritions:
+
+                - One 1 GB vfat
+                - Rest with ext4
+
+        - Use debootstrap to bootstrap debian
+
+        - Install grub
+
+        - reboot

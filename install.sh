@@ -15,24 +15,28 @@ cd "$(dirname "$0")"
 
 build_asahi_installer() {(
   docker build -t m1-asahi -f Dockerfile.asahi src
-  docker run --rm m1-asahi cat installer.tar.gz > dest/installer.tar.gz
-  docker run --rm m1-asahi cat package/m1n1.bin > dest/m1n1.bin
+  docker run --rm m1-asahi cat installer.tar.gz > src/dest/installer.tar.gz
+  docker run --rm m1-asahi cat package/m1n1.bin > src/dest/m1n1.bin
 )}
 
 build_uboot() {(
   docker build -t m1-uboot -f Dockerfile.uboot src
-  docker run --rm m1-uboot cat u-boot-nodtb.bin > dest/u-boot-nodtb.bin
-  cat dest/m1n1.bin dest/linux.dtb dest/u-boot-nodtb.bin > dest/u-boot.bin
+  docker run --rm m1-uboot cat u-boot-nodtb.bin > src/dest/u-boot-nodtb.bin
+  cat src/dest/m1n1.bin src/dest/linux.dtb src/dest/u-boot-nodtb.bin > src/dest/u-boot.bin
 )}
 
 build_linux() {(
   docker build -t m1-linux -f Dockerfile.linux src
-  docker run --rm m1-linux cat linux.tar.gz > dest/linux.tar.gz
-  docker run --rm m1-linux cat linux.dtb > dest/linux.dtb
+  docker run --rm m1-linux cat linux.deb > src/dest/linux.deb
+  docker run --rm m1-linux cat linux.dtb > src/dest/linux.dtb
+)}
+
+build_media() {(
+  docker build -t m1-media -f Dockerfile.media src
+  docker run --rm m1-media cat m1.tar.gz > src/dest/m1.tar.gz
 )}
 
 modify_step2() {(
-  # TODO: unzip a rootfs tar.gz (e.g. alpine-minirootfs-3.15.0-aarch64.tar.gz)
   # TODO: take bootaa64.efi from e.g. alpine-standard-3.15.0-aarch64.iso to boot grub
   # TODO: create a dd-able img (see m1-debian/bootstrap.sh)
   # TODO: actually modify step2.sh for those files to be installed during the asahi install process
@@ -55,9 +59,10 @@ install_asahi() {(
   exec sudo ./install.sh
 )}
 
-mkdir -p dest
+mkdir -p src/dest
 
 build_asahi_installer
 build_linux
 build_uboot
+build_media
 #install_asahi
