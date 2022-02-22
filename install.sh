@@ -33,15 +33,14 @@ build_linux() {(
 
 build_media() {(
   docker build -t m1-media -f Dockerfile.media src
-  docker rm m1-media-container
+  docker run --rm m1-media cat /testing/usr/lib/grub/arm64-efi/monolithic/grubaa64.efi > src/dest/grubaa64.efi
+  docker rm -f m1-media-container
   docker run --privileged --name m1-media-container m1-media sh -c "mount -o loop media /mnt && cp -a /testing/* /mnt/ && umount /mnt && tar cf - media | pigz > m1.tar.gz"
   docker cp m1-media-container:/media/m1.tar.gz src/dest/m1.tar.gz
   docker rm m1-media-container
 )}
 
 modify_step2() {(
-  # TODO: take bootaa64.efi from e.g. alpine-standard-3.15.0-aarch64.iso to boot grub
-  # TODO: create a dd-able img (see m1-debian/bootstrap.sh)
   # TODO: actually modify step2.sh for those files to be installed during the asahi install process
   return
 )}
