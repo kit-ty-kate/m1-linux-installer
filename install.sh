@@ -33,8 +33,9 @@ build_linux() {(
 
 build_media() {(
   docker build -t m1-media -f Dockerfile.media src
+  docker rm m1-media-container
   docker run --privileged --name m1-media-container m1-media sh -c "mount -o loop media /mnt && cp -a /testing/* /mnt/ && umount /mnt && tar cf - media | pigz > m1.tar.gz"
-  docker cp m1-media-container:m1.tar.gz src/dest/m1.tar.gz
+  docker cp m1-media-container:/media/m1.tar.gz src/dest/m1.tar.gz
   docker rm m1-media-container
 )}
 
