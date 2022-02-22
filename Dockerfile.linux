@@ -17,5 +17,5 @@ RUN patch -p1 -i /patches/0001-4k-iommu-patch.patch
 RUN make olddefconfig
 RUN make -j$(nproc) bindeb-pkg
 
-RUN mv linux-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-arm64.deb linux.deb
+RUN mv ../linux-image-5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty_5.16.0-asahi-next-20220118-14796-gb3265ba9e5bd-dirty-1_arm64.deb linux.deb
 RUN cat arch/arm64/boot/dts/apple/*.dtb > linux.dtb
