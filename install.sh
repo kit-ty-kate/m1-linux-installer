@@ -41,15 +41,27 @@ build_media() {(
 )}
 
 modify_step2() {(
-  # TODO: actually modify step2.sh for those files to be installed during the asahi install process
-  return
+  # Removing the last line of step2.sh and adding our own steps instead
+  sed -e "/^reboot$/d" step2.sh > step2.sh.tmp
+  mv step2.sh.tmp step2.sh
+
+  cat >> step2.sh << EOF
+echo "Wait, there is more..."
+echo " - Create a new partition in the empty space (512MB should suffice)"
+echo " - Format it (using newfs_msdos)"
+echo " - Mount it then copy grubaa64.efi as <mount-point>/efi/boot/bootaa64.efi"
+echo " - Deal with linux-fireware.tar (TODO, see m1-debian/fwx.sh)"
+echo " - Add a new partition on the remaining space (%%noformat%%)"
+echo " - cat m1.tar.gz | tar -xOz | dd of=/dev/<your-new-partition> bs=8m"
+EOF
+# TODO: Find a way to modify asahi-linux/src/stub.py to also copy grubaa64.efi, the new fwx.sh, u-boot.bin and m1.tar.gz in 1TR
+# TODO: Do the thing instead of telling users to do the thing (see m1-debian/m1di.pl)
 )}
 
 install_asahi() {(
-  TMP=/tmp/asahi-install
-  PKG="$PWD/asahi-installer/installer.tar.gz"
+  TMP="$(mktemp -d)"
+  PKG="$PWD/src/dest/installer.tar.gz"
 
-  mkdir -p "$TMP"
   cd "$TMP"
 
   tar xf "$PKG"
